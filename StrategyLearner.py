@@ -54,7 +54,7 @@ class StrategyLearner(object):
     Test Learner Functions
     """
 
-    def test_learner(df_features):
+    def test_learner(self, df_features):
         #Actions: 0 = BUY, 1 = SELL, 2 = NOTHING
         BUY = 0
         SELL = 1
