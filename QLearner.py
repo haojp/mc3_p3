@@ -58,9 +58,11 @@ v        @summary: Update the Q table and return an action
         
         #update Q
         self.update_Q(self.s, self.a, s_prime, r)
+        '''
         #incrment Tc
         self.Tc[self.s, self.a, s_prime] += 1
         self.update_model(s_prime, r)
+        '''
         #update experience list
         self.exp_list.append((self.s, self.a, s_prime, r))
         #dyna
