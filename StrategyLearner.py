@@ -113,7 +113,7 @@ class StrategyLearner(object):
                 #calculate the reward - % change in port val from previous day
                 daily_ret = (df_holdings.ix[date, 'Portfolio Value'] / \
                           df_holdings.ix[date - 1, 'Portfolio Value'] - 1)
-                reward = daily_ret * 10
+                reward = daily_ret
                 #update state by discretizing
                 state = self.discretize(df_features.ix[date,'BB'], \
                                         df_features.ix[date,'MOM'], \
