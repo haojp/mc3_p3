@@ -30,7 +30,7 @@ class QLearner(object):
         self.rar = rar
         self.radr = radr
         self.dyna = dyna
-        self.T = np.full((num_states, num_actions, num_states), 0.000001)
+        self.T = np.full((num_states, num_actions, num_states), 0.00001)
         self.R = np.copy(self.Q)
         self.Tc = np.copy(self.T)
 
