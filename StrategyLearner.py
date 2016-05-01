@@ -9,7 +9,7 @@ class StrategyLearner(object):
     
     def __init__(self, verbose=False):
         self.verbose = verbose
-        self.ql = ql.QLearner(num_states=3000, num_actions=3, rar=0.5, radr=0.99,dyna=200)
+        self.ql = ql.QLearner(num_states=3000, num_actions=3, rar=0.5, radr=0.99,dyna=30)
         
     def addEvidence(self, \
                     symbol='IBM', \
