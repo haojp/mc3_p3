@@ -67,7 +67,7 @@ class StrategyLearner(object):
         df_trades = pd.DataFrame(index=df_features.index, columns=['Trades'])
         cur_pos = CASH
         holdings = 0
-        for date in range(1, def_features.shape[0]):
+        for date in range(1, df_features.shape[0]):
             state = self.discretize(df_features.ix[date,'BB'], \
                                     df_features.ix[date,'MOM'], \
                                     df_features.ix[date,'VOL']) + cur_pos * 1000
@@ -111,10 +111,13 @@ class StrategyLearner(object):
                 #apply action and update df_holdings and cur_pos
                 df_holdings, cur_pos = self.apply_action(date, df_holdings, action)
                 #calculate the reward - % change in port val from previous day
-                reward = (df_holdings.ix[date, 'Portfolio Value'] / \
+                cum_ret = (df_holdings.ix[date, 'Portfolio Value'] / \
                           df_holdings.ix[date - 1, 'Portfolio Value'] - 1) * 10
+                if cum_ret > 0:
+                    reward = 1
+                else:
+                    reward = -1
                 #update state by discretizing
-                start = time.time()
                 state = self.discretize(df_features.ix[date,'BB'], \
                                         df_features.ix[date,'MOM'], \
                                         df_features.ix[date,'VOL']) + cur_pos * 1000
