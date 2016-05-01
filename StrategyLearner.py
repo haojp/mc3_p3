@@ -67,7 +67,7 @@ class StrategyLearner(object):
         df_trades = pd.DataFrame(index=df_features.index, columns=['Trades'])
         cur_pos = CASH
         holdings = 0
-        for date in range(1, df_features.shape[0]):
+        for date in range(0, df_features.shape[0]):
             state = self.discretize(df_features.ix[date,'BB'], \
                                     df_features.ix[date,'MOM'], \
                                     df_features.ix[date,'VOL']) + cur_pos * 1000
