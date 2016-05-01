@@ -9,7 +9,7 @@ class StrategyLearner(object):
     
     def __init__(self, verbose=False):
         self.verbose = verbose
-        self.ql = ql.QLearner(num_states=3000, num_actions=3, dyna=200)
+        self.ql = ql.QLearner(num_states=3000, num_actions=3, rar=0.5, radr=0.99,dyna=200)
         
     def addEvidence(self, \
                     symbol='IBM', \
@@ -22,16 +22,71 @@ class StrategyLearner(object):
         self.sv = sv
         #calculate features
         df_features = self.calc_features()
-        #calculate discretize thresholds
-        self.thresholds = self.disc_thresh(df_features)
-        #train learner
-        self.train_learner(df_features)
+        if np.sum(df_features.values) == 0:
+            print 'NO FEATURES!'
+        else:
+            #calculate discretize thresholds
+            self.thresholds = self.disc_thresh(df_features)
+            #train learner
+            self.train_learner(df_features)
 
     def testPolicy(self, \
                    symbol='IBM', \
                    sd=dt.datetime(2008,1,1), \
-                   ed=dt.datetime(2009,1,1)):
-        pass
+                   ed=dt.datetime(2009,1,1), \
+                   sv=10000):
+        self.symbol = symbol
+        self.sd = sd
+        self.ed = ed
+        #calculate the features
+        df_features = self.calc_features()
+        if np.sum(df_features.values) == 0:
+            print 'NO FEATURES!'
+            df_trades =  pd.DataFrame(index=df_features.index, columns=['Trades'])
+            df_trades.ix[:] = 0
+        else:
+            #test learner
+            df_trades = self.test_learner(df_features)
+        return df_trades
+        
+
+    """
+    Test Learner Functions
+    """
+
+    def test_learner(df_features):
+        #Actions: 0 = BUY, 1 = SELL, 2 = NOTHING
+        BUY = 0
+        SELL = 1
+        NOTHING = 2
+        #positions: 0 = CASH, 1 = SHORT, 2 = LONG
+        CASH = 0
+        SHORT = 1
+        LONG = 2
+        #prime test
+        df_trades = pd.DataFrame(index=df_features.index, columns=['Trades'])
+        cur_pos = CASH
+        holdings = 0
+        for date in range(1, def_features.shape[0]):
+            state = self.discretize(df_features.ix[date,'BB'], \
+                                    df_features.ix[date,'MOM'], \
+                                    df_features.ix[date,'VOL']) + cur_pos * 1000
+            action = self.ql.setquerystate(state)
+            if action == BUY and cur_pos != LONG:
+                df_trades.ix[date, 'Trades'] = 100
+                holdings += 100
+            elif action == SELL and cur_pos != SHORT:
+                df_trades.ix[date, 'Trades'] = -100
+                holdings -= 100
+            else:
+                df_trades.ix[date, 'Trades'] = 0
+            if holdings == 100:
+                cur_pos = LONG
+            elif holdings == -100:
+                cur_pos = SHORT
+            else:
+                cur_pos = CASH
+        return df_trades
 
     """
     Train Learner Functions
@@ -40,7 +95,7 @@ class StrategyLearner(object):
         #build a df_holdings
         df_original_holdings = self.build_holdings(df_features)
         #Training loop
-        for i in range(0, 10000):
+        for i in range(0, 50):
             #reset df_holdings
             df_holdings = df_original_holdings.copy()
             #calc start state
@@ -63,6 +118,9 @@ class StrategyLearner(object):
                 state = self.discretize(df_features.ix[date,'BB'], \
                                         df_features.ix[date,'MOM'], \
                                         df_features.ix[date,'VOL']) + cur_pos * 1000
+                if state == 0:
+                    print df_features.ix[date], self.symbol
+                    continue
                 #query learner and get new action
                 #print state, reward, df_holdings.ix[date, 'Portfolio Value']
                 action = self.ql.query(state, reward)
@@ -92,7 +150,6 @@ class StrategyLearner(object):
         return disc_val
 
     def disc_thresh(self, df_features):
-        print df_features
         thresholds = np.zeros((10,3))
         #data.sort()
         df_bb = df_features['BB'].copy()
@@ -107,13 +164,22 @@ class StrategyLearner(object):
         stepsize = df_bb.size / steps 
         #for i in range(0, steps):
         #    threshold[i] = data[(i+1)*stepsize]
-        for i in range(0, steps):
-            #bb threshold
-            thresholds[i, 0] = df_bb[(i+1)*stepsize]
-            #mom threshold
-            thresholds[i, 1] = df_bb[(i+1)*stepsize]
-            #vol threshold
-            thresholds[i, 2] = df_bb[(i+1)*stepsize]
+        if df_bb.size == 10:
+            for i in range(0, steps):
+                #bb threshold
+                thresholds[i, 0] = df_bb[i]
+                #mom threshold
+                thresholds[i, 1] = df_bb[i]
+                #vol threshold
+                thresholds[i, 2] = df_bb[i]
+        else:
+            for i in range(0, steps):
+                #bb threshold
+                thresholds[i, 0] = df_bb[(i+1)*stepsize]
+                #mom threshold
+                thresholds[i, 1] = df_bb[(i+1)*stepsize]
+                #vol threshold
+                thresholds[i, 2] = df_bb[(i+1)*stepsize]
         return thresholds
         
     """
@@ -148,7 +214,7 @@ class StrategyLearner(object):
                                         df_prices.ix[t-window, self.symbol]) - 1.0)
             df_features.ix[t,'VOL'] = df_daily_rets_std.ix[t, self.symbol]
             df_features.ix[t, 'Price'] = df_prices.ix[t, self.symbol]
-        return df_features.dropna()
+        return df_features.fillna(0)
 
     """
     Utility Functions

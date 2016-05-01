@@ -23,7 +23,8 @@ class QLearner(object):
         self.a = 0
         #my code below
         self.num_states = num_states
-        self.Q = np.random.uniform(-1.0, 1.0, [num_states,num_actions])
+        self.Q = np.zeros((num_states, num_actions))
+        #self.Q = np.random.uniform(-1.0, 1.0, [num_states,num_actions])
         self.alpha = alpha
         self.gamma = gamma
         self.rar = rar
@@ -40,7 +41,7 @@ class QLearner(object):
         @returns: The selected action
         """
         self.s = s
-        self.a = action = rand.randint(0, self.num_actions-1)
+        self.a = action = np.argmax(self.Q[s])
         if self.verbose: print "s =", s,"a =",action
         return action
 
@@ -53,22 +54,27 @@ v        @summary: Update the Q table and return an action
         """
 
         #my code below
-        action = np.argmax(self.Q[s_prime])
-        if self.verbose: print "s =", s_prime,"a =", action,"r =",r
         
         #update Q
-        self.update_Q(self.s, self.a, s_prime, r, action)
+        self.update_Q(self.s, self.a, s_prime, r)
         #incrment Tc
         self.Tc[self.s, self.a, s_prime] += 1
-
+        self.update_model(s_prime, r)
         #dyna
         self.run_dyna()
-        self.update_model(s_prime, r)
+        #prepare for next query
+        if rand.uniform(0.0, 1.0) < self.rar:
+            action = rand.randint(0, self.num_actions - 1)
+        else:
+            action = np.argmax(self.Q[s_prime])
+        self.rar *= self.radr
+        if self.verbose: print "s =", s_prime,"a =", action,"r =",r
         self.s = s_prime
         self.a = action
         return action
 
-    def update_Q(self, s, a, s_prime, r, action):
+    def update_Q(self, s, a, s_prime, r):
+        action = np.argmax(self.Q[s_prime])
         #future rewards = Q[s_prime, argmax_a_prime(Q[s_prime, a_prime])]
         fut_r = self.Q[s_prime, action]
         self.Q[s, a] = (1-self.alpha)*self.Q[s,a]+\
@@ -92,8 +98,7 @@ v        @summary: Update the Q table and return an action
             a = rand.randint(0, self.num_actions - 1)
             s_prime = np.argmax(self.T[s, a])
             r = self.R[s, a]
-            action = np.argmax(self.Q[s_prime])
-            self.update_Q(s, a, s_prime, r, action)
+            self.update_Q(s, a, s_prime, r)
             
             
 

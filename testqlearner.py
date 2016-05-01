@@ -90,7 +90,7 @@ if __name__=="__main__":
     verbose = False #print lots of debug stuff if True
 
     # read in the map
-    inf = open('testworlds/world01.csv')
+    inf = open('testworlds/world02.csv')
     data = np.array([map(float,s.strip().split(',')) for s in inf.readlines()])
     originalmap = data.copy() #make a copy so we can revert to the original map later
 
@@ -101,10 +101,24 @@ if __name__=="__main__":
 
     rand.seed(5)
 
+    #run w/o dyna
+    '''
     learner = ql.QLearner(num_states=100,\
         num_actions = 4, \
+        alpha=0.2,\
+        gamma=0.9,\
         rar = 0.98, \
-        radr = 0.9999, \
+        radr = 0.999, \
+        verbose=verbose, \
+        dyna=0) #initialize the learner
+    '''
+    #run w dyna
+    learner = ql.QLearner(num_states=100,\
+        num_actions = 4, \
+        alpha=0.2,\
+        gamma=0.9,\
+        rar = 0.5, \
+        radr = 0.99, \
         verbose=verbose, \
         dyna=200) #initialize the learner
 
