@@ -24,8 +24,8 @@ class QLearner(object):
         #my code below
         self.exp_list = []
         self.num_states = num_states
-        self.Q = np.zeros((num_states, num_actions))
-        #self.Q = np.random.uniform(-1.0, 1.0, [num_states,num_actions])
+        #self.Q = np.zeros((num_states, num_actions))
+        self.Q = np.random.uniform(-1.0, 1.0, [num_states,num_actions])
         self.alpha = alpha
         self.gamma = gamma
         self.rar = rar
