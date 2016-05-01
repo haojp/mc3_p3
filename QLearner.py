@@ -65,6 +65,7 @@ v        @summary: Update the Q table and return an action
         #prepare for next query
         if rand.uniform(0.0, 1.0) < self.rar:
             action = rand.randint(0, self.num_actions - 1)
+            print 'RANDOM ACTION!'
         else:
             action = np.argmax(self.Q[s_prime])
         self.rar *= self.radr
