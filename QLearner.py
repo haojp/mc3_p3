@@ -22,6 +22,7 @@ class QLearner(object):
         self.s = 0
         self.a = 0
         #my code below
+        self.exp_list = []
         self.num_states = num_states
         self.Q = np.zeros((num_states, num_actions))
         #self.Q = np.random.uniform(-1.0, 1.0, [num_states,num_actions])
@@ -60,6 +61,8 @@ v        @summary: Update the Q table and return an action
         #incrment Tc
         self.Tc[self.s, self.a, s_prime] += 1
         self.update_model(s_prime, r)
+        #update experience list
+        self.exp_list.append((self.s, self.a, s_prime, r))
         #dyna
         self.run_dyna()
         #prepare for next query
@@ -94,11 +97,14 @@ v        @summary: Update the Q table and return an action
         self.R[self.s, self.a] = (1-self.alpha) * self.R[self.s, self.a] + self.alpha * r
 
     def run_dyna(self):
+        exp_list_len = len(self.exp_list)
+        random_list = np.random.randint(exp_list_len, size=self.dyna)
         for i in range(0, self.dyna):
-            s = rand.randint(0, self.num_states - 1)
-            a = rand.randint(0, self.num_actions - 1)
-            s_prime = np.argmax(self.T[s, a])
-            r = self.R[s, a]
+            temp_tuple = self.exp_list[random_list[i]]
+            s = temp_tuple[0]
+            a = temp_tuple[1]
+            s_prime = temp_tuple[2]
+            r = temp_tuple[3]
             self.update_Q(s, a, s_prime, r)
             
             
