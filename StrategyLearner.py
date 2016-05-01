@@ -95,7 +95,7 @@ class StrategyLearner(object):
         #build a df_holdings
         df_original_holdings = self.build_holdings(df_features)
         #Training loop
-        for i in range(0, 50):
+        for i in range(0, 200):
             #reset df_holdings
             df_holdings = df_original_holdings.copy()
             #calc start state
