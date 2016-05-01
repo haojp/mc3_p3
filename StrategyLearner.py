@@ -71,7 +71,7 @@ class StrategyLearner(object):
             state = self.discretize(df_features.ix[date,'BB'], \
                                     df_features.ix[date,'MOM'], \
                                     df_features.ix[date,'VOL']) + cur_pos * 1000
-            action = self.ql.setquerystate(state)
+            action = self.ql.querysetstate(state)
             if action == BUY and cur_pos != LONG:
                 df_trades.ix[date, 'Trades'] = 100
                 holdings += 100
@@ -111,9 +111,9 @@ class StrategyLearner(object):
                 #apply action and update df_holdings and cur_pos
                 df_holdings, cur_pos = self.apply_action(date, df_holdings, action)
                 #calculate the reward - % change in port val from previous day
-                cum_ret = (df_holdings.ix[date, 'Portfolio Value'] / \
+                daily_ret = (df_holdings.ix[date, 'Portfolio Value'] / \
                           df_holdings.ix[date - 1, 'Portfolio Value'] - 1) * 10
-                if cum_ret > 0:
+                if daily_ret > 0:
                     reward = 1
                 else:
                     reward = -1
